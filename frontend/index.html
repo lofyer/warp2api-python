@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warp2API 账户监控</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .header-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-btn:hover {
+            background: #5568d3;
+            transform: scale(1.02);
+        }
+        .header-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .header-btn .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border-width: 2px;
+            margin-left: 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .accounts-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .account-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .account-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+        .account-card.disabled {
+            opacity: 0.6;
+            background: #f0f0f0;
+        }
+        .account-card.blocked {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        .account-card.quota-exceeded {
+            border-color: #ffc107;
+            background: #fffbf0;
+        }
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .account-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        .badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-enabled {
+            background: #28a745;
+            color: white;
+        }
+        .badge-disabled {
+            background: #6c757d;
+            color: white;
+        }
+        .badge-logged-in {
+            background: #17a2b8;
+            color: white;
+        }
+        .badge-quota {
+            background: #ffc107;
+            color: #000;
+        }
+        .badge-blocked {
+            background: #dc3545;
+            color: white;
+        }
+        .badge-rate-limited {
+            background: #fd7e14;
+            color: white;
+        }
+        .badge-prepare-failed {
+            background: #6c757d;
+            color: white;
+        }
+        .account-card.rate-limited {
+            border-color: #fd7e14;
+            background: #fff8f0;
+        }
+        .account-card.prepare-failed {
+            border-color: #6c757d;
+            background: #f5f5f5;
+        }
+        .account-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detail-label {
+            color: #666;
+            font-size: 0.85em;
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+        .quota-bar {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+        .quota-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        .quota-bar-track {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .quota-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .quota-bar-fill.low { background: #28a745; }
+        .quota-bar-fill.medium { background: #ffc107; }
+        .quota-bar-fill.high { background: #dc3545; }
+        .jwt-status {
+            font-size: 0.75em;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .jwt-valid { background: #d4edda; color: #155724; }
+        .jwt-expired { background: #f8d7da; color: #721c24; }
+        .refresh-btn {
+            display: none;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .header-btn.green {
+            background: #28a745;
+        }
+        .header-btn.green:hover {
+            background: #218838;
+        }
+        .header-btn.orange {
+            background: #fd7e14;
+        }
+        .header-btn.orange:hover {
+            background: #e96b02;
+        }
+        .header-btn.red {
+            background: #dc3545;
+        }
+        .header-btn.red:hover {
+            background: #c82333;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .modal-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        .modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .modal-hint {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 20px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .modal-btn.cancel {
+            background: #e9ecef;
+            color: #333;
+        }
+        .modal-btn.cancel:hover {
+            background: #dee2e6;
+        }
+        .modal-btn.confirm {
+            background: #28a745;
+            color: white;
+        }
+        .modal-btn.confirm:hover {
+            background: #218838;
+        }
+        .modal-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .test-result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-result.pending {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        .error {
+            background: #fff5f5;
+            border: 2px solid #dc3545;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: #dc3545;
+        }
+        .last-updated {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Warp2API 账户监控</h1>
+            <p class="subtitle">实时监控 Warp 账户状态和使用情况</p>
+            <div class="header-buttons">
+                <button class="header-btn" onclick="reloadConfig()" id="reload-btn">
+                    🔄 重载配置
+                </button>
+                <button class="header-btn green" onclick="showAddAccountModal()">
+                    ➕ 新增账户
+                </button>
+                <button class="header-btn orange" onclick="showTestModal()">
+                    🧪 测试连接
+                </button>
+                <button class="header-btn red" onclick="deleteBlockedAccounts()" id="delete-blocked-btn">
+                    🗑️ 删除封禁账户
+                </button>
+            </div>
+        </header>
+
+        <div id="content">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <p id="last-updated" class="last-updated"></p>
+    </div>
+
+    <!-- 新增账户弹窗 -->
+    <div class="modal" id="add-account-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">➕ 新增账户</h3>
+            <input type="text" class="modal-input" id="account-name" placeholder="账户名称（可选，留空自动生成）">
+            <textarea class="modal-input" id="refresh-token" rows="4" placeholder="粘贴 refresh_token..."></textarea>
+            <p class="modal-hint">请输入 Warp 的 refresh_token，通常是一串很长的字符串</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="hideAddAccountModal()">取消</button>
+                <button class="modal-btn confirm" onclick="addAccount()" id="add-account-btn">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试连接弹窗 -->
+    <div class="modal" id="test-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">🧪 测试连接</h3>
+            <p class="modal-hint">发送测试请求到 API 接口，验证服务是否正常工作</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="hideTestModal()">关闭</button>
+                <button class="modal-btn confirm" onclick="runTest()" id="test-btn">开始测试</button>
+            </div>
+            <div id="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let autoRefreshTimer = null;
+
+        async function fetchStats() {
+            const response = await fetch(`${API_BASE}/stats`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return await response.json();
+        }
+
+        async function reloadConfig() {
+            const btn = document.getElementById('reload-btn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '重载中<span class="loading-spinner"></span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/accounts/reload`, { method: 'POST' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                await refreshData();
+            } catch (error) {
+                console.error('Failed to reload config:', error);
+                alert('重载配置失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function showAddAccountModal() {
+            document.getElementById('add-account-modal').classList.add('show');
+            document.getElementById('account-name').value = '';
+            document.getElementById('refresh-token').value = '';
+        }
+
+        function hideAddAccountModal() {
+            document.getElementById('add-account-modal').classList.remove('show');
+        }
+
+        async function addAccount() {
+            const nameInput = document.getElementById('account-name');
+            const tokenInput = document.getElementById('refresh-token');
+            const btn = document.getElementById('add-account-btn');
+            
+            const refreshToken = tokenInput.value.trim();
+            if (!refreshToken) {
+                alert('请输入 refresh_token');
+                return;
+            }
+            
+            const name = nameInput.value.trim() || null;  // 留空则由后端自动生成
+            
+            btn.disabled = true;
+            btn.textContent = '添加中...';
+            
+            try {
+                const body = { refresh_token: refreshToken };
+                if (name) body.name = name;
+                
+                const response = await fetch(`${API_BASE}/accounts/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                alert(`账户 "${result.name}" 添加成功！`);
+                hideAddAccountModal();
+                await refreshData();
+            } catch (error) {
+                console.error('Failed to add account:', error);
+                alert('添加账户失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '添加';
+            }
+        }
+
+        async function deleteBlockedAccounts() {
+            const btn = document.getElementById('delete-blocked-btn');
+            
+            if (!confirm('确定要删除所有 403 封禁的账户吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '删除中<span class="loading-spinner"></span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/accounts/delete-blocked`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || err.error?.message || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                alert(`成功删除 ${result.deleted_count} 个封禁账户`);
+                await refreshData();
+            } catch (error) {
+                console.error('Failed to delete blocked accounts:', error);
+                alert('删除封禁账户失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function showTestModal() {
+            document.getElementById('test-modal').classList.add('show');
+            document.getElementById('test-result').innerHTML = '';
+        }
+
+        function hideTestModal() {
+            document.getElementById('test-modal').classList.remove('show');
+        }
+
+        async function runTest() {
+            const btn = document.getElementById('test-btn');
+            const resultDiv = document.getElementById('test-result');
+            
+            btn.disabled = true;
+            btn.textContent = '测试中...';
+            resultDiv.innerHTML = '<div class="test-result pending">正在发送测试请求...</div>';
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(`${API_BASE}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'auto',
+                        messages: [
+                            { role: 'user', content: '1+1=?' },
+                            { role: 'assistant', content: '2' },
+                            { role: 'user', content: '再加1呢？' }
+                        ],
+                        stream: false
+                    })
+                });
+                
+                const elapsed = Date.now() - startTime;
+                
+                let data;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    data = { error: { message: text } };
+                }
+                
+                if (response.ok) {
+                    const content = data.choices?.[0]?.message?.content || '(无内容)';
+                    resultDiv.innerHTML = `<div class="test-result success">✅ 测试成功！(耗时: ${elapsed}ms)\n\n模型: ${data.model || 'unknown'}\n回复: ${content}</div>`;
+                } else {
+                    const errorMsg = data.error?.message || JSON.stringify(data, null, 2);
+                    resultDiv.innerHTML = `<div class="test-result error">❌ 请求失败 (HTTP ${response.status})\n\n${errorMsg}</div>`;
+                }
+            } catch (error) {
+                const elapsed = Date.now() - startTime;
+                resultDiv.innerHTML = `<div class="test-result error">❌ 测试失败 (耗时: ${elapsed}ms)\n\n错误: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '开始测试';
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '从未';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return `${diff}秒前`;
+            if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+            if (diff < 604800) return `${Math.floor(diff / 86400)}天前`;
+            
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function renderStats(data) {
+            // 统计各状态账户数量
+            const statusCounts = {
+                normal: 0,
+                blocked_403: 0,
+                rate_limited_429: 0,
+                quota_exceeded: 0,
+                disabled: 0
+            };
+            
+            data.accounts.forEach(acc => {
+                if (!acc.enabled) {
+                    statusCounts.disabled++;
+                } else if (acc.status_code === '403') {
+                    statusCounts.blocked_403++;
+                } else if (acc.status_code === '429') {
+                    statusCounts.rate_limited_429++;
+                } else if (acc.status_code === 'quota_exceeded') {
+                    statusCounts.quota_exceeded++;
+                } else {
+                    statusCounts.normal++;
+                }
+            });
+            
+            const html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_accounts}</div>
+                        <div class="stat-label">总账户数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.available_accounts}</div>
+                        <div class="stat-label">可用账户</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #28a745;">${statusCounts.normal}</div>
+                        <div class="stat-label">正常</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #dc3545;">${statusCounts.blocked_403}</div>
+                        <div class="stat-label">403 封禁</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #fd7e14;">${statusCounts.rate_limited_429}</div>
+                        <div class="stat-label">429 限流</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ffc107;">${statusCounts.quota_exceeded}</div>
+                        <div class="stat-label">配额用尽</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_requests}</div>
+                        <div class="stat-label">总请求数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.strategy}</div>
+                        <div class="stat-label">调度策略</div>
+                    </div>
+                </div>
+
+                <div class="accounts-section">
+                    <h2 class="section-title">📋 账户列表</h2>
+                    <div class="accounts-grid">
+                        ${data.accounts.map(acc => renderAccountCard(acc)).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
+            document.getElementById('last-updated').textContent = 
+                `最后更新: ${new Date().toLocaleString('zh-CN')}`;
+        }
+
+        function renderAccountCard(acc) {
+            const classes = ['account-card'];
+            if (!acc.enabled) classes.push('disabled');
+            
+            // 根据 status_code 判断状态
+            const statusCode = acc.status_code ? String(acc.status_code) : '';
+            if (statusCode === '403') classes.push('blocked');
+            if (statusCode === '429') classes.push('rate-limited');
+            if (statusCode === '503') classes.push('prepare-failed');
+            if (statusCode === 'quota_exceeded') classes.push('quota-exceeded');
+            
+            const badges = [];
+            if (acc.enabled) {
+                badges.push('<span class="badge badge-enabled">启用</span>');
+            } else {
+                badges.push('<span class="badge badge-disabled">禁用</span>');
+            }
+            if (acc.is_logged_in) {
+                badges.push('<span class="badge badge-logged-in">已登录</span>');
+            }
+            if (statusCode === 'quota_exceeded') {
+                badges.push('<span class="badge badge-quota">配额用尽</span>');
+            }
+            if (statusCode === '403') {
+                badges.push('<span class="badge badge-blocked">403 封禁</span>');
+            }
+            if (statusCode === '429') {
+                badges.push('<span class="badge badge-rate-limited">429 限流</span>');
+            }
+            if (statusCode === '503') {
+                badges.push('<span class="badge badge-prepare-failed">503 准备失败</span>');
+            }
+            
+            // JWT 状态
+            const jwtStatus = acc.jwt_expired 
+                ? '<span class="jwt-status jwt-expired">JWT过期</span>'
+                : '<span class="jwt-status jwt-valid">JWT有效</span>';
+            
+            // 配额进度条
+            const quotaLimit = acc.quota_limit || 0;
+            const quotaUsed = acc.quota_used || 0;
+            const quotaRemaining = acc.quota_remaining || 0;
+            const quotaPercent = quotaLimit > 0 ? Math.round((quotaUsed / quotaLimit) * 100) : 0;
+            const quotaClass = quotaPercent < 50 ? 'low' : (quotaPercent < 80 ? 'medium' : 'high');
+            
+            const quotaBar = quotaLimit > 0 ? `
+                <div class="quota-bar">
+                    <div class="quota-bar-label">
+                        <span>配额使用</span>
+                        <span>${quotaUsed} / ${quotaLimit} (${quotaPercent}%)</span>
+                    </div>
+                    <div class="quota-bar-track">
+                        <div class="quota-bar-fill ${quotaClass}" style="width: ${quotaPercent}%"></div>
+                    </div>
+                </div>
+            ` : '';
+            
+            return `
+                <div class="${classes.join(' ')}">
+                    <div class="account-header">
+                        <span class="account-name">${acc.name}</span>
+                        <div class="badges">${badges.join('')}</div>
+                    </div>
+                    <div class="account-details">
+                        <div class="detail-item">
+                            <span class="detail-label">请求数</span>
+                            <span class="detail-value">${acc.request_count || 0}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">错误数</span>
+                            <span class="detail-value">${acc.error_count || 0}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">最后使用</span>
+                            <span class="detail-value">${formatDate(acc.last_used)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Token状态</span>
+                            <span class="detail-value">${jwtStatus}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">剩余配额</span>
+                            <span class="detail-value">${quotaRemaining}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Token刷新</span>
+                            <span class="detail-value">${formatDate(acc.last_refreshed)}</span>
+                        </div>
+                        ${quotaBar}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderError(message) {
+            document.getElementById('content').innerHTML = `
+                <div class="error">
+                    <h2>❌ 加载失败</h2>
+                    <p style="margin-top: 15px;">${message}</p>
+                    <p style="margin-top: 10px; color: #666;">请检查服务是否正常运行</p>
+                </div>
+            `;
+        }
+
+        async function refreshData() {
+            try {
+                const data = await fetchStats();
+                renderStats(data);
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+                renderError(error.message);
+            }
+        }
+
+        // 初始加载
+        refreshData();
+
+        // 自动刷新（每30秒）
+        autoRefreshTimer = setInterval(refreshData, 30000);
+
+        // 页面关闭时清除定时器
+        window.addEventListener('beforeunload', () => {
+            if (autoRefreshTimer) {
+                clearInterval(autoRefreshTimer);
+            }
+        });
+    </script>
+</body>
+</html>

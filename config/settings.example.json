@@ -1,0 +1,32 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 9980
+  },
+  "warp": {
+    "insecure_tls": true
+  },
+  "logging": {
+    "level": "INFO"
+  },
+  "account_strategy": "round-robin",
+  "auto_save_tokens": true,
+  "token_refresh_interval": 3600,
+  "test_message_on_startup": false,
+  "test_model": "claude-4-5-opus",
+  "test_query": "你好",
+  "disable_warp_tools": true,
+  "_comments": {
+    "account_strategy": "可选值: round-robin | random | least-used | quota-aware",
+    "auto_save_tokens": "是否自动保存更新的refresh_token到配置文件",
+    "token_refresh_interval": "自动刷新token的间隔时间（秒），默认3600秒（1小时）",
+    "test_message_on_startup": "启动时是否发送测试消息",
+    "test_model": "测试消息使用的模型",
+    "test_query": "测试消息的内容",
+    "server.host": "服务器监听地址",
+    "server.port": "服务器监听端口",
+    "warp.insecure_tls": "是否禁用TLS验证，仅开发环境使用",
+    "logging.level": "日志级别: DEBUG | INFO | WARNING | ERROR。DEBUG级别会打印用户请求、Warp请求体和响应内容",
+    "disable_warp_tools": "是否禁用Warp内置工具，默认true。开启后可使用用户API请求中的tools字段"
+  }
+}

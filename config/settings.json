@@ -1,0 +1,36 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 9980
+  },
+  "warp": {
+    "insecure_tls": true
+  },
+  "logging": {
+    "level": "DEBUG"
+  },
+  "account_strategy": "round-robin",
+  "auto_save_tokens": true,
+  "token_refresh_interval": 86400,
+  "test_message_on_startup": true,
+  "test_model": "claude-4-5-opus",
+  "test_query": "你好",
+  "disable_warp_tools": true,
+  "max_tool_results": 20,
+  "max_history_messages": 50,
+  "split_toolcall_result": false,
+  "_comments": {
+    "account_strategy": "可选值: round-robin | random | least-used | quota-aware",
+    "auto_save_tokens": "是否自动保存更新的refresh_token到配置文件",
+    "token_refresh_interval": "自动刷新token的间隔时间（秒），默认3600秒（1小时）",
+    "test_message_on_startup": "启动时是否发送测试消息",
+    "test_model": "测试消息使用的模型",
+    "test_query": "测试消息的内容",
+    "disable_warp_tools": "是否禁用Warp内置工具，默认true。开启后可使用用户API请求中的tools字段",
+    "max_tool_results": "发送给Warp的工具调用结果最大数量，默认10。只保留最近的N个工具结果，避免请求过大",
+    "max_history_messages": "发送给Warp的历史消息最大数量，默认20。只保留最近的N条历史消息，避免请求过大",
+    "split_toolcall_result": "是否将每个工具调用结果分开发送，默认false。true时每个工具结果单独发送一次请求，false时合并所有结果一次发送",
+    "retry_429_interval": "429限流后重试间隔时间（分钟），默认60分钟"
+  },
+  "retry_429_interval": 60
+}

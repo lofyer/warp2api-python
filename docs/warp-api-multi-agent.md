@@ -1,0 +1,100 @@
+POST https://app.warp.dev/ai/multi-agent HTTP/2.0
+x-warp-client-id: warp-app
+x-warp-client-version: v0.2026.01.14.08.15.stable_04
+x-warp-os-category: macOS
+x-warp-os-name: macOS
+x-warp-os-version: 26.3
+content-type: application/x-protobuf
+authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjFjMzIxOTgzNGRhNTBlMjBmYWVhZWE3Yzg2Y2U3YjU1MzhmMTdiZTEiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiQ2FtIFplIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0k1eFN0anRpVjlybUUzdHVBUjNkMGZyUXBmZUdyV28wdk51QTM2anRTRTFRbTIxUT1zOTYtYyIsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9hc3RyYWwtZmllbGQtMjk0NjIxIiwiYXVkIjoiYXN0cmFsLWZpZWxkLTI5NDYyMSIsImF1dGhfdGltZSI6MTc2ODUwOTM1MywidXNlcl9pZCI6ImhJVGRhZHJyVDJiaFh5MmppR1JWamFwRVh2QTMiLCJzdWIiOiJoSVRkYWRyclQyYmhYeTJqaUdSVmphcEVYdkEzIiwiaWF0IjoxNzY5MjYyODYxLCJleHAiOjE3NjkyNjY0NjEsImVtYWlsIjoiemVreXMxcTEyaDE1dDFAaC5qbjlrLnVzIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDUxMTYyMTAwMzUxODQwNTg1NzgiXSwiZW1haWwiOlsiemVreXMxcTEyaDE1dDFAaC5qbjlrLnVzIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.fwgft3-5_vQkPOXs2lBFmoCft9vW_TfbdLEMC_lm33ZEtuwUI87vjHYryac0EuftvnKSfsZvwjzVe7CxcdinFnP-uI7isU4pmG_gcaasheeVrWDLPGWfKrtYeQZIMAIhVDLkvzrjnJddEP-9o5O-t4fHNIPmlHi3CU6ote6GgwR2I5g1SdbthjZKtpTB61fxzKJ5HBsx7HQSCWbXktSitZShRtuvPW0p62rrWOLezHhx2BD8hczev9cWNyKY9kDH0-2brh5JOfEvRl7L8sA0EkvXjEnN940cJbyQANJlrQ6djHF8quRZxWrXPmzpOSIwZFfo-R90og7p9Y5x8yi7sA
+accept: text/event-stream
+accept-encoding: gzip,br
+content-length: 296
+
+
+V
+B
+
+
+/Users/lofyer
+/Users/lofyer
+MacOS
+
+zsh5.9"ɟ\xd3\xcb\xc0\xd3\xe72
+
+
+你好 f
+!
+claude-4-5-opus"cli-agent-auto 08@J	
+
+PX`hpx\x80\x88\xa8\xb2
+\xb8"d 
+is_autodetected_user_query 
+
+entrypointUSER_INITIATED 
+is_auto_resume_after_error 
+
+HTTP/2.0 200 
+cache-control: no-cache
+content-security-policy: default-src 'self'; style-src 'self' 'unsafe-inline' fonts.googleapis.com cdn.jsdelivr.net www.googletagmanager.com; font-src 'self' fonts.gstatic.com cdn.jsdelivr.net; img-src 'self' data: fonts.gstatic.com *.googleusercontent.com avatars.githubusercontent.com www.googletagmanager.com forms.hsforms.com track.hubspot.com *.reddit.com; object-src 'none'; frame-src 'self' *.warp.dev https://www.recaptcha.net/recaptcha/ https://recaptcha.google.com/recaptcha/; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.warp.dev securetoken.googleapis.com apis.google.com www.googletagmanager.com cdn.jsdelivr.net *.verisoul.ai js.hs-scripts.com js.hscollectedforms.net js.hs-banner.com js.hs-analytics.net *.mountain.com *.tvads.ai https://www.recaptcha.net/recaptcha/ https://www.gstatic.com/recaptcha/ https://www.gstatic.cn/recaptcha/ *.redditstatic.com *.reddit.com pixel.byspotify.com; worker-src 'self' blob: data:; report-uri /csp-report; connect-src 'self' https: wss: securetoken.googleapis.com api.rudderstack.com http://localhost:9277; frame-ancestors 'self'
+content-type: text/event-stream;charset=utf-8
+set-cookie: rl_anonymous_id=e72118a6-2f21-4cad-9759-96a214f311e6; Path=/; Domain=warp.dev; Max-Age=31536000
+x-frame-options: DENY
+date: Sat, 24 Jan 2026 13:57:30 GMT
+server: Google Frontend
+traceparent: 00-42706494786357745a3caa3c8ef149e8-522b324513fc4707-00
+x-cloud-trace-context: 42706494786357745a3caa3c8ef149e8/5920881407378081543
+via: 1.1 google
+x-xss-protection: 1; mode=block
+cross-origin-opener-policy: same-origin-allow-popups
+permissions-policy: camera=(), microphone=(), geolocation=()
+referrer-policy: no-referrer
+cross-origin-embedder-policy: unsafe-none
+x-content-type-options: nosniff
+strict-transport-security: max-age=31536000; includeSubDomains
+cross-origin-resource-policy: same-origin
+alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+content-length: 3244
+
+event:data
+data:CkwKJDc1MDNhNDgyLTU1MTctNGI1ZS05MDU3LTRiMGVjNzNiMDA0YhIkYjNlMzA1MmEtMWFmZC00NGY0LWI2MWYtMDdiYzgyYzk3MmQw
+
+event:data
+data:EuEBCt4BCtsBCtgBCiQ0YWRkOTVmZi0wMzc1LTQ3MDItYTJlZS0zOGZlYTA1MTNmMzIqrwEKJDc3YmU3MWI3LWQ5N2EtNDUyOS1iOGQ0LWFmODc3NzVkZWI5YlokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMyaiRiM2UzMDUyYS0xYWZkLTQ0ZjQtYjYxZi0wN2JjODJjOTcyZDByCwjKn9PLBhDFw7l6Ii4KJDE1MTY0NTdjLTRjMGUtNGUyNi1iZjEzLWRhZGY1MTE0MjgzMyIGCgRJZ0E9
+
+event:data
+data:EtwBCtkBGtYBCiQ0YWRkOTVmZi0wMzc1LTQ3MDItYTJlZS0zOGZlYTA1MTNmMzISrQEKJDlhMzFmZDRjLTVkZDAtNGEzNy05NDYyLWZjOGI4NWEyY2MxMzoUR2dzSXlwX1R5d1lRZzQ3dWVBPT1aJDRhZGQ5NWZmLTAzNzUtNDcwMi1hMmVlLTM4ZmVhMDUxM2YzMmokYjNlMzA1MmEtMWFmZC00NGY0LWI2MWYtMDdiYzgyYzk3MmQwcgsIyp_TywYQyZa9ejIWChRLZ3dLQkFnQ0VBUUtCQWdERUFZPQ==
+
+event:data
+data:EpYCCpMCGpACCiQ0YWRkOTVmZi0wMzc1LTQ3MDItYTJlZS0zOGZlYTA1MTNmMzIS5wEKJDllNmM1ODVlLTEyYzUtNDhlZi04NWVmLTJiZWM2MTVjNjI4MToUR2dzSXlwX1R5d1lRZzQ3dWVBPT1aJDRhZGQ5NWZmLTAzNzUtNDcwMi1hMmVlLTM4ZmVhMDUxM2YzMmokYjNlMzA1MmEtMWFmZC00NGY0LWI2MWYtMDdiYzgyYzk3MmQwcgsIyp_TywYQmdq-ehJQCgbkvaDlpb0SQgoeCg0vVXNlcnMvbG9meWVyEg0vVXNlcnMvbG9meWVyEgcKBU1hY09TGgoKA3pzaBIDNS45IgsIyZ_TywYQwNPnBSIAKAE=
+
+event:data
+data:Eq0CCqoCIqcCCucBCiQ5ZTZjNTg1ZS0xMmM1LTQ4ZWYtODVlZi0yYmVjNjE1YzYyODE6FEdnc0l5cF9UeXdZUWc0N3VlQT09WiQ0YWRkOTVmZi0wMzc1LTQ3MDItYTJlZS0zOGZlYTA1MTNmMzJqJGIzZTMwNTJhLTFhZmQtNDRmNC1iNjFmLTA3YmM4MmM5NzJkMHILCMqf08sGEJnavnoSUAoG5L2g5aW9EkIKHgoNL1VzZXJzL2xvZnllchINL1VzZXJzL2xvZnllchIHCgVNYWNPUxoKCgN6c2gSAzUuOSILCMmf08sGEMDT5wUiACgBEhUKE3NlcnZlcl9tZXNzYWdlX2RhdGEaJDRhZGQ5NWZmLTAzNzUtNDcwMi1hMmVlLTM4ZmVhMDUxM2YzMg==
+
+event:data
+data:EgQKAkoA
+
+event:data
+data:EvwBCvkBGvYBCiQ0YWRkOTVmZi0wMzc1LTQ3MDItYTJlZS0zOGZlYTA1MTNmMzISzQEKJGM3NGYxZjM4LTI2MWEtNGYzYi04ZjY3LTNiZjZkYTgyMWUzNjpEQ2lRMlptVm1aV1UxWXkwelptVm1MVFE0TXpFdE9ESTRNQzFpWXpCbU9UYzNNMlkzWWpnYUN3aktuOVBMQmhDRGp1NTRaJDRhZGQ5NWZmLTAzNzUtNDcwMi1hMmVlLTM4ZmVhMDUxM2YzMmokYjNlMzA1MmEtMWFmZC00NGY0LWI2MWYtMDdiYzgyYzk3MmQwcgwIzJ_TywYQlsCixAEaBQoD5L2g
+
+event:data
+data:EpwBCpkBKpYBClkKJGM3NGYxZjM4LTI2MWEtNGYzYi04ZjY3LTNiZjZkYTgyMWUzNlokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMyGgsKCeWlve-8geaciRITChFhZ2VudF9vdXRwdXQudGV4dBokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMy
+
+event:data
+data:EpYBCpMBKpABClMKJGM3NGYxZjM4LTI2MWEtNGYzYi04ZjY3LTNiZjZkYTgyMWUzNlokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMyGgUKA-S7gBITChFhZ2VudF9vdXRwdXQudGV4dBokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMy
+
+event:data
+data:EqIBCp8BKpwBCl8KJGM3NGYxZjM4LTI2MWEtNGYzYi04ZjY3LTNiZjZkYTgyMWUzNlokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMyGhEKD-S5iOWPr-S7peW4ruS9oBITChFhZ2VudF9vdXRwdXQudGV4dBokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMy
+
+event:data
+data:EpwBCpkBKpYBClkKJGM3NGYxZjM4LTI2MWEtNGYzYi04ZjY3LTNiZjZkYTgyMWUzNlokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMyGgsKCeeahOWQl--8nxITChFhZ2VudF9vdXRwdXQudGV4dBokNGFkZDk1ZmYtMDM3NS00NzAyLWEyZWUtMzhmZWEwNTEzZjMy
+
+event:data
+data:EgQKAlIA
+
+event:data
+data:EkMKQUI_CiQ0YWRkOTVmZi0wMzc1LTQ3MDItYTJlZS0zOGZlYTA1MTNmMzISF1NpbXBsZSBDaGluZXNlIEdyZWV0aW5n
+
+event:data
+data:GpQBUgUNAACAP1qIAQ3ayaA9EAAdAACAPyIUCg9DbGF1ZGUgT3B1cyA0LjUQ1noqOAoECAAQABICCAAaAggAIgIIACoCCAAyCAgAEAAYACAAOgIIAEICCABKAggAUgIIAFoCCABiAggAMioKD0NsYXVkZSBPcHVzIDQuNRIXENZ6GhIKDXByaW1hcnlfYWdlbnQQ1noSAA==
+
+
