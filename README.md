@@ -65,7 +65,7 @@ curl http://localhost:9980/v1/chat/completions \
 
 ## 管理界面
 
-访问 `http://localhost:9980/` 可使用 Web 管理界面：
+访问 `http://localhost:9980/admin` 可使用 Web 管理界面：
 
 - 查看账户状态
 - 新增/删除账户
@@ -114,4 +114,4 @@ python migrate_accounts.py
 
 ## 赞助商
 
-感谢 [mikomiko](https://pay.ldxp.cn/shop/I8L3F7PJ) 对本项目的支持！
+感谢 https://pay.ldxp.cn/shop/I8L3F7PJ 对本项目的支持！
