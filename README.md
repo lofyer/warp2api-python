@@ -1,6 +1,6 @@
 # Warp2API
 
-将 Warp AI 转换为 OpenAI 兼容 API 的代理服务。
+将 Warp AI 转换为 OpenAI/Anthropic 兼容 API 的代理服务。
 
 ## 快速开始
 
@@ -32,11 +32,28 @@ python server.py
 
 ### 4. 使用 API
 
+**OpenAI 格式：**
+
 ```bash
 curl http://localhost:9980/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "auto",
+    "model": "claude-4-sonnet",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "stream": false
+  }'
+```
+
+**Anthropic 格式：**
+
+```bash
+curl http://localhost:9980/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: any" \
+  -d '{
+    "model": "claude-4-sonnet",
+    "max_tokens": 1024,
+    "system": "You are a helpful assistant.",
     "messages": [{"role": "user", "content": "Hello!"}],
     "stream": false
   }'
@@ -77,6 +94,7 @@ curl http://localhost:9980/v1/chat/completions \
 | 端点 | 方法 | 说明 |
 |------|------|------|
 | `/v1/chat/completions` | POST | OpenAI 兼容聊天接口 |
+| `/v1/messages` | POST | Anthropic 兼容聊天接口 |
 | `/v1/models` | GET | 获取可用模型列表 |
 | `/stats` | GET | 获取账户统计信息 |
 | `/accounts/add` | POST | 新增账户 |
@@ -97,17 +115,20 @@ warp2api-python/
 ├── core/
 │   ├── account_manager.py # 账户管理
 │   ├── warp_client.py     # Warp 客户端
-│   └── openai_adapter.py  # OpenAI 格式转换
+│   ├── openai_adapter.py  # OpenAI 格式转换
+│   └── anthropic_adapter.py # Anthropic 格式转换
 ├── frontend/
 │   └── index.html         # Web 管理界面
 └── logs/
     └── warp_api.log       # 日志文件
 ```
 
-#如果从旧版本升级，运行迁移脚本：
+## 升级迁移
+
+如果从旧版本升级，运行迁移脚本：
 
 ```bash
-python migrate_accounts.py
+python tests/migrate_accounts.py
 ```
 
 这会将 `config/accounts.json` 迁移到新的单文件目录结构。

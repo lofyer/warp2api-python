@@ -25,6 +25,7 @@ sys.path.insert(0, str(current_dir))
 from core.account_manager import AccountManager, Account, StrategyType, load_accounts_from_directory, NoAvailableAccountError
 from core.warp_client import WarpClient
 from core.openai_adapter import OpenAIAdapter
+from core.anthropic_adapter import AnthropicAdapter
 
 # 日志格式
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
@@ -211,6 +212,59 @@ class ModelInfo(BaseModel):
     owned_by: str = "warp"
 
 
+# ==================== Anthropic Pydantic 模型 ====================
+
+class AnthropicContentBlock(BaseModel):
+    """Anthropic content block"""
+    model_config = ConfigDict(extra='allow')
+    
+    type: str  # "text", "image", "tool_use", "tool_result"
+    text: Optional[str] = None
+    # tool_use fields
+    id: Optional[str] = None
+    name: Optional[str] = None
+    input: Optional[Dict[str, Any]] = None
+    # tool_result fields
+    tool_use_id: Optional[str] = None
+    content: Optional[Union[str, List[Any]]] = None
+    is_error: Optional[bool] = None
+    # image fields
+    source: Optional[Dict[str, Any]] = None
+
+
+class AnthropicMessage(BaseModel):
+    """Anthropic message"""
+    model_config = ConfigDict(extra='allow')
+    
+    role: str  # "user" or "assistant"
+    content: Union[str, List[AnthropicContentBlock]]
+
+
+class AnthropicToolDefinition(BaseModel):
+    """Anthropic tool definition"""
+    name: str
+    description: Optional[str] = None
+    input_schema: Optional[Dict[str, Any]] = None
+
+
+class AnthropicMessagesRequest(BaseModel):
+    """Anthropic Messages API request"""
+    model_config = ConfigDict(extra='allow')
+    
+    model: str
+    messages: List[AnthropicMessage]
+    max_tokens: int = 4096
+    system: Optional[str] = None
+    stream: bool = False
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    stop_sequences: Optional[List[str]] = None
+    tools: Optional[List[AnthropicToolDefinition]] = None
+    tool_choice: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
 # ==================== API 端点 ====================
 
 @app.get("/")
@@ -221,6 +275,7 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "chat": "/v1/chat/completions",
+            "anthropic": "/v1/messages",
             "models": "/v1/models",
             "health": "/health",
             "stats": "/stats",
@@ -436,6 +491,164 @@ async def chat_completions_default(request: ChatCompletionRequest):
 async def chat_completions_warp(request: ChatCompletionRequest):
     """Warp 渠道聊天完成接口"""
     return await handle_chat_completion(request)
+
+
+# ==================== Anthropic API 路由 ====================
+
+async def handle_anthropic_completion(request: AnthropicMessagesRequest):
+    """Anthropic Messages API 处理函数"""
+    if not account_manager:
+        return JSONResponse(
+            status_code=503,
+            content={"type": "error", "error": {"type": "api_error", "message": "Service not initialized"}}
+        )
+    
+    max_retries = 3
+    last_error = None
+    
+    for attempt in range(max_retries):
+        account = None
+        try:
+            account = await account_manager.get_next_account()
+            logger.info(f"[Anthropic][Attempt {attempt + 1}/{max_retries}] Using account: {account.name} for model: {request.model}")
+            
+            client = account.get_warp_client()
+            
+            # 将 Anthropic 消息转换为 Warp 格式
+            messages_dict = [msg.model_dump() if hasattr(msg, 'model_dump') else msg for msg in request.messages]
+            warp_messages = AnthropicAdapter.anthropic_to_warp_messages(request.system, messages_dict)
+            
+            disable_warp_tools = settings.get("disable_warp_tools", True)
+            
+            # 转换 tools
+            tools = None
+            if request.tools:
+                tools = []
+                for tool in request.tools:
+                    tool_dict = tool.model_dump() if hasattr(tool, 'model_dump') else tool
+                    tools.append({
+                        "type": "function",
+                        "function": {
+                            "name": tool_dict.get("name"),
+                            "description": tool_dict.get("description"),
+                            "parameters": tool_dict.get("input_schema", {"type": "object", "properties": {}})
+                        }
+                    })
+            
+            warp_stream = client.chat_completion(
+                messages=warp_messages,
+                model=request.model,
+                stream=request.stream,
+                disable_warp_tools=disable_warp_tools,
+                tools=tools
+            )
+            
+            if request.stream:
+                return StreamingResponse(
+                    AnthropicAdapter.warp_to_anthropic_stream(warp_stream, request.model),
+                    media_type="text/event-stream",
+                    headers={
+                        "Cache-Control": "no-cache",
+                        "Connection": "keep-alive",
+                        "X-Accel-Buffering": "no",
+                    }
+                )
+            else:
+                response = await AnthropicAdapter.warp_to_anthropic_response(warp_stream, request.model)
+                return response
+        
+        except NoAvailableAccountError as e:
+            logger.error(f"No available accounts: {e}")
+            return JSONResponse(
+                status_code=503,
+                content={"type": "error", "error": {"type": "api_error", "message": "No available accounts"}}
+            )
+        
+        except HTTPException as e:
+            if e.status_code == 403:
+                logger.warning(f"Account returned 403, marking as blocked and retrying...")
+                account.mark_blocked(403, "Blocked")
+            elif e.status_code == 429:
+                logger.warning(f"Account returned 429, marking as rate limited and retrying...")
+                account.mark_blocked(429, "Too Many Requests")
+                
+                last_error = e
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    raise
+            else:
+                raise
+        
+        except Exception as e:
+            error_str = str(e).lower()
+            if "403" in error_str or "forbidden" in error_str or "unauthorized" in error_str:
+                logger.warning(f"Account error (403-like): {e}, marking as blocked and retrying...")
+                account.mark_blocked(403, "Blocked")
+                
+                last_error = e
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    logger.error(f"All {max_retries} attempts failed")
+                    return JSONResponse(
+                        status_code=500,
+                        content={"type": "error", "error": {"type": "api_error", "message": f"All accounts failed: {str(e)}"}}
+                    )
+            elif "429" in error_str or "too many" in error_str or "rate limit" in error_str:
+                logger.warning(f"Account error (429-like): {e}, marking as rate limited and retrying...")
+                account.mark_blocked(429, "Too Many Requests")
+                
+                last_error = e
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    logger.error(f"All {max_retries} attempts failed")
+                    return JSONResponse(
+                        status_code=500,
+                        content={"type": "error", "error": {"type": "api_error", "message": f"All accounts failed: {str(e)}"}}
+                    )
+            elif "failed to prepare" in error_str:
+                logger.warning(f"Account prepare failed: {e}, retrying with next account...")
+                
+                last_error = e
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    logger.error(f"All {max_retries} attempts failed")
+                    return JSONResponse(
+                        status_code=500,
+                        content={"type": "error", "error": {"type": "api_error", "message": f"All accounts failed: {str(e)}"}}
+                    )
+            else:
+                return JSONResponse(
+                    status_code=500,
+                    content={"type": "error", "error": {"type": "api_error", "message": str(e)}}
+                )
+    
+    if last_error:
+        logger.error(f"All {max_retries} attempts failed")
+        return JSONResponse(
+            status_code=500,
+            content={"type": "error", "error": {"type": "api_error", "message": f"All accounts failed after {max_retries} attempts"}}
+        )
+    
+    return JSONResponse(
+        status_code=500,
+        content={"type": "error", "error": {"type": "api_error", "message": "Unexpected error in request handling"}}
+    )
+
+
+@app.post("/v1/messages")
+async def anthropic_messages(request: AnthropicMessagesRequest):
+    """Anthropic Messages API 兼容端点"""
+    return await handle_anthropic_completion(request)
+
+
+@app.post("/anthropic/v1/messages")
+async def anthropic_messages_explicit(request: AnthropicMessagesRequest):
+    """Anthropic 渠道明确路由"""
+    return await handle_anthropic_completion(request)
 
 
 @app.get("/test-stream")
