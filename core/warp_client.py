@@ -114,6 +114,14 @@ class WarpClient:
                         self.account.mark_blocked(429, "Too Many Requests")
                     return False
                     
+        except httpx.TimeoutException as e:
+            logger.error(f"Token refresh timeout for '{self.account.name}': {e}")
+            # 超时不标记账户状态，可能是网络问题
+            return False
+        except httpx.ConnectError as e:
+            logger.error(f"Token refresh connection error for '{self.account.name}': {e}")
+            # 连接错误不标记账户状态，可能是网络问题
+            return False
         except Exception as e:
             logger.error(f"Error refreshing token for '{self.account.name}': {e}")
             return False
@@ -224,8 +232,19 @@ class WarpClient:
                     return True
                 else:
                     logger.error(f"Client login failed for '{self.account.name}': HTTP {response.status_code}")
+                    # 标记对应的状态
+                    if response.status_code == 403:
+                        self.account.mark_blocked(403, "Blocked")
+                    elif response.status_code == 429:
+                        self.account.mark_blocked(429, "Too Many Requests")
                     return False
                     
+        except httpx.TimeoutException as e:
+            logger.error(f"Login timeout for '{self.account.name}': {e}")
+            return False
+        except httpx.ConnectError as e:
+            logger.error(f"Login connection error for '{self.account.name}': {e}")
+            return False
         except Exception as e:
             logger.error(f"Error during login for '{self.account.name}': {e}")
             return False
@@ -284,12 +303,13 @@ class WarpClient:
         # 检查并刷新token
         if self.account.is_jwt_expired():
             if not await self.refresh_token():
-                return False
+                # refresh_token 内部已经标记了状态码（403/429）
+                raise RuntimeError(f"Failed to prepare client for account '{self.account.name}': token refresh failed")
         
         # 检查并执行登录
         if not self.account.is_logged_in:
             if not await self.login():
-                return False
+                raise RuntimeError(f"Failed to prepare client for account '{self.account.name}': login failed")
         
         return True
     
@@ -663,15 +683,15 @@ class WarpClient:
             self.account.mark_error(str(e))
             logger.error(f"Error in chat_completion for '{self.account.name}': {e}")
             
-            # 如果是 403 错误，保存配置
+            # 如果是 403 错误，保存账户配置
             if "HTTP 403" in str(e):
                 try:
                     if self.account.account_manager:
                         import asyncio
-                        asyncio.create_task(self.account.account_manager.save_config())
-                        logger.info(f"Triggered config save for '{self.account.name}' after 403 error")
+                        asyncio.create_task(self.account.account_manager.save_account(self.account))
+                        logger.info(f"Triggered account save for '{self.account.name}' after 403 error")
                 except Exception as save_error:
-                    logger.error(f"Failed to trigger config save after 403: {save_error}")
+                    logger.error(f"Failed to trigger account save after 403: {save_error}")
             
             raise
     

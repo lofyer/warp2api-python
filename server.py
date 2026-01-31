@@ -400,6 +400,12 @@ async def handle_chat_completion(request: ChatCompletionRequest):
             if e.status_code == 403:
                 logger.warning(f"Account returned 403, marking as blocked and retrying...")
                 account.mark_blocked(403, "Blocked")
+                
+                last_error = e
+                if attempt < max_retries - 1:
+                    continue  # 重试下一个账户
+                else:
+                    raise  # 最后一次尝试失败，抛出异常
             elif e.status_code == 429:
                 logger.warning(f"Account returned 429, marking as rate limited and retrying...")
                 account.mark_blocked(429, "Too Many Requests")
@@ -568,6 +574,12 @@ async def handle_anthropic_completion(request: AnthropicMessagesRequest):
             if e.status_code == 403:
                 logger.warning(f"Account returned 403, marking as blocked and retrying...")
                 account.mark_blocked(403, "Blocked")
+                
+                last_error = e
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    raise
             elif e.status_code == 429:
                 logger.warning(f"Account returned 429, marking as rate limited and retrying...")
                 account.mark_blocked(429, "Too Many Requests")
